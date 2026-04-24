@@ -1,0 +1,35 @@
+version: '3.7'
+services:
+  snipeit:
+    image: snipe/snipe-it
+    container_name: snipeit
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      - APP_URL=http://localhost:8080
+      - APP_KEY=base64:QoohZfcIpCQ5IBKjCSvqXL6i/EypuZ98KId6/XgIspA=  # ← required
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - MYSQL_PORT_3306_TCP_ADDR=db
+      - MYSQL_PORT_3306_TCP_PORT=3306
+      - MYSQL_DATABASE=snipeit
+      - MYSQL_USER=snipeit
+      - MYSQL_PASSWORD=snipeit123
+    depends_on:
+      - db
+
+  db:
+    image: mysql:5.7
+    container_name: snipeit_db
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root123
+      - MYSQL_DATABASE=snipeit
+      - MYSQL_USER=snipeit
+      - MYSQL_PASSWORD=snipeit123
+    volumes:
+      - db_data:/var/lib/mysql   # ← persists your data
+
+volumes:
+  db_data:

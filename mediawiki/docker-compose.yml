@@ -1,0 +1,45 @@
+services:
+
+  db:
+    image: mariadb:10.11
+    container_name: mediawiki-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - wiki-net
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  mediawiki:
+    image: mediawiki:latest
+    container_name: mediawiki
+    restart: unless-stopped
+    ports:
+      - "${MW_DOCKER_PORT}:80"
+    volumes:
+      - wiki_images:/var/www/html/images
+      # Uncomment AFTER setup wizard downloads LocalSettings.php:
+      - ./LocalSettings.php:/var/www/html/LocalSettings.php:ro
+    networks:
+      - wiki-net
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:
+  wiki_images:
+
+networks:
+  wiki-net:
+    driver: bridge
