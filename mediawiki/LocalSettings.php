@@ -33,6 +33,39 @@ $wgScriptPath = "";
 ## The protocol and server name to use in fully-qualified URLs
 $wgServer = "http://localhost:8082";
 
+# Create groups
+$wgGroupPermissions['teacher'] = [];
+$wgGroupPermissions['student'] = [];
+
+# Teacher permissions
+$wgGroupPermissions['teacher']['edit'] = true;
+$wgGroupPermissions['teacher']['createpage'] = true;
+
+# Student permissions
+$wgGroupPermissions['student']['read'] = true;
+$wgGroupPermissions['student']['edit'] = false;
+
+# Cite extension
+wfLoadExtension( 'Cite' );
+
+# VisualEditor extension
+wfLoadExtension( 'VisualEditor' );
+
+# VisualEditor — connect to Parsoid (bundled in MW 1.35+)
+$wgVirtualRestConfig['modules']['parsoid'] = [
+    'url' => 'http://localhost/w/rest.php',
+    'domain' => 'localhost',
+    'prefix' => 'localhost',
+    'forwardCookies' => true,
+    'restbaseCompat' => false,
+];
+
+# Optional: enable VE for all users by default
+$wgDefaultUserOptions['visualeditor-enable'] = 1;
+$wgHiddenPrefs[] = 'visualeditor-enable';
+
+# Admin already has all permissions
+
 ## The URL path to static resources (images, scripts, etc.)
 $wgResourceBasePath = $wgScriptPath;
 

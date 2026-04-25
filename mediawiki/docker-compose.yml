@@ -20,6 +20,15 @@ services:
       retries: 10
       start_period: 30s
 
+  extension-installer:
+    image: curlimages/curl:latest
+    container_name: mediawiki-ext-installer
+    restart: "no"
+    volumes:
+      - wiki_extensions:/extensions
+      - ./install-extensions.sh:/install-extensions.sh:ro
+    entrypoint: ["/bin/sh", "/install-extensions.sh"]
+
   mediawiki:
     image: mediawiki:latest
     container_name: mediawiki
@@ -28,17 +37,20 @@ services:
       - "${MW_DOCKER_PORT}:80"
     volumes:
       - wiki_images:/var/www/html/images
-      # Uncomment AFTER setup wizard downloads LocalSettings.php:
+      - wiki_extensions:/var/www/html/extensions
       - ./LocalSettings.php:/var/www/html/LocalSettings.php:ro
     networks:
       - wiki-net
     depends_on:
       db:
         condition: service_healthy
+      extension-installer:
+        condition: service_completed_successfully
 
 volumes:
   db_data:
   wiki_images:
+  wiki_extensions:
 
 networks:
   wiki-net:
