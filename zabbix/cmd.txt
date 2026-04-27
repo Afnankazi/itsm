@@ -1,0 +1,30 @@
+apk add --no-cache stress-ng
+stress-ng --cpu 2 --timeout 60s
+
+dd if=/dev/zero of=/dev/null &
+
+for i in $(seq 1 8); do dd if=/dev/zero of=/dev/null & done
+
+disk 
+docker exec -it -u 0 zabbix-agent2 sh
+dd if=/dev/zero of=/tmp/testfile bs=1M count=500
+
+rm /tmp/testfile
+{
+config monitor
+Type: Zabbix Agent
+
+
+Key: system.cpu.util
+
+
+Update Interval: 30s
+
+
+Memory Usage
+Key: vm.memory.size[available]
+
+
+Disk Space
+Key: vfs.fs.size[C:,free]
+}

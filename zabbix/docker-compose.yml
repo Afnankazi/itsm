@@ -128,3 +128,7 @@ volumes:
 networks:
   zabbix-net:
     driver: bridge
+
+    ##docker exec -it -u 0 zabbix-agent2 sh
+    ##apk add --no-cache stress-ng stress-ng --cpu 2 --timeout 60s
+    ## kill $(jobs -p)
