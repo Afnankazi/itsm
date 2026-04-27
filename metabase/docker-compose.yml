@@ -1,6 +1,5 @@
 services:
 
-  # Metabase's own app database (stores dashboards, users, questions)
   metabase-db:
     image: postgres:16
     container_name: metabase-db
@@ -20,16 +19,39 @@ services:
       retries: 10
       start_period: 30s
 
+  # ── Your data source MySQL ──────────────────────────────────────────
+  mysql:
+    image: mysql:8.4
+    container_name: mysql
+    restart: unless-stopped
+    command: --mysql-native-password=ON   # ← correct flag for 8.4+
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypassword
+    volumes:
+    - mysql-data:/var/lib/mysql
+    networks:
+    - metabase-net
+    healthcheck:
+     test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-prootpass"]
+     interval: 15s
+     timeout: 10s
+     retries: 15
+     start_period: 60s
+  # ───────────────────────────────────────────────────────────────────
+
   metabase:
     image: metabase/metabase:latest
     container_name: metabase
     restart: unless-stopped
     ports:
-      - "3000:3000"        # Access at http://localhost:3000
+      - "3000:3000"
     environment:
       MB_DB_TYPE: postgres
       MB_DB_DBNAME: metabase
-      MB_DB_HOST: metabase-db   # service name, not localhost
+      MB_DB_HOST: metabase-db
       MB_DB_PORT: 5432
       MB_DB_USER: metabase
       MB_DB_PASS: metabasepass
@@ -41,10 +63,13 @@ services:
     depends_on:
       metabase-db:
         condition: service_healthy
+      mysql:                        # wait for MySQL too
+        condition: service_healthy
 
 volumes:
   metabase-db-data:
   metabase-data:
+  mysql-data:                       # ← new volume
 
 networks:
   metabase-net:
